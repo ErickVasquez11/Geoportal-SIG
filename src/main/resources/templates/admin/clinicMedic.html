@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geoportal Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    .tabulator {
+      font-family: 'Arial', sans-serif;
+      border: none;
+      background-color: #ffffff;
+      color: #333333;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .tabulator .tabulator-header {
+      background-color: #f3f4f6;
+      border-bottom: 2px solid #e5e7eb;
+      color: #1f2937;
+      font-weight: bold;
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+      background-color: #f3f4f6;
+      border-right: none;
+    }
+
+    .tabulator .tabulator-header .tabulator-col-content {
+      padding: 12px 15px;
+    }
+
+    .tabulator .tabulator-row {
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .tabulator .tabulator-row .tabulator-cell {
+      border-right: none;
+      padding: 12px 15px;
+    }
+
+    .tabulator .tabulator-row:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    .tabulator .tabulator-row:hover {
+      background-color: #e5e7eb;
+    }
+
+    /* Action buttons styling */
+    .action-btn-view {
+      color: #10B981;
+    }
+
+    .action-btn-edit {
+      color: #3B82F6;
+    }
+
+    .action-btn-delete {
+      color: #EF4444;
+    }
+
+    .action-btn-view:hover,
+    .action-btn-edit:hover,
+    .action-btn-delete:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body class="font-sans">
+  <!-- Sidebar -->
+  <div class="flex flex-col md:flex-row h-screen">
+    <aside class="w-full md:w-64 bg-gray-800 p-6">
+      <div class="flex items-center mb-8">
+        <div class="text-blue-500 text-2xl font-semibold">Administrador</div>
+      </div>
+      <nav class="space-y-2">
+        <a href="/admin/unidMedic" class="flex items-center p-2 text-gray-300 hover:bg-gray-700 rounded-md">
+          <span>Unidades Médicas</span>
+        </a>
+        <a href="/admin/clinicMedic" class="flex items-center p-2 text-gray-300 bg-gray-700 rounded-md">
+          <span>Clínicas Médicas</span>
+        </a>
+        <a href="/logout" class="flex items-center p-2 text-gray-300 hover:bg-gray-700 rounded-md">
+          <span>Cerrar Sesión</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <div class="flex-1 p-6 w-full overflow-x-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-semibold">Gestión de Clínicas Médicas</h1>
+        <!-- Botón para agregar clínica -->
+        <button onclick="toggleModal('addClinicModal')"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+          Agregar Clínica Médica
+        </button>
+      </div>
+
+      <div id="clinicTable" class="mt-6 h-5/6 shadow-lg"></div>
+
+      <div id="loadingMessage"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white hidden">
+        <span class="">
+          <i class="fa-solid fa-spinner animate-spin text-4xl"></i>
+        </span>
+      </div>
+
+      <!-- Modal para agregar clínica -->
+      <div id="addClinicModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white max-w-full p-6 rounded-lg">
+          <!-- Botón para cerrar -->
+          <button class="flex w-full items-center justify-end text-white" onclick="toggleModal('addClinicModal')">
+            <p class="pr-4 text-xl font-bold hover:opacity-75">
+              <i class="fa-solid fa-xmark text-2xl text-black"></i>
+            </p>
+          </button>
+          <form onsubmit="addClinic(event)">
+            <h2 id="title-modal" class="text-2xl font-semibold text-center text-black mb-6">
+              Agregar Clínica Médica
+            </h2>
+            <div class="max-w-lg mx-auto bg-white p-6 grid gap-6 grid-cols-2 rounded-lg">
+              <!-- Parte 1: Información General -->
+              <div class="">
+                <div class="mb-4">
+                  <label for="clinicName" class="block text-sm mb-2 font-medium text-black">Nombre de la
+                    Clínica</label>
+                  <input type="text" id="clinicName" class="w-full px-3 py-2 bg-gray-300 text- rounded-md" required />
+                </div>
+                <div class="mb-4">
+                  <label for="clinicAddress" class="block text-sm font-medium mb-2 text-black">Dirección</label>
+                  <input type="text" id="clinicAddress" class="w-full px-3 py-2 bg-gray-300 text- rounded-md"
+                    required />
+                </div>
+                <div class="mb-4">
+                  <label for="clinicAddress" class="block text-sm font-medium mb-2 text-black">Municipio</label>
+                  <input type="text" id="municipality" class="w-full px-3 py-2 bg-gray-300 text- rounded-md" required />
+                </div>
+                <div class="mb-4">
+                  <label for="clinicStartWeekend" class="block text-sm font-medium mb-2 text-black">Horario Inicio
+                    Fin de Semana</label>
+                  <input type="time" id="clinicStartWeekend" class="w-full px-3 py-2 bg-gray-300 text- rounded-md"
+                    required />
+                </div>
+                <div class="mb-4">
+                  <label for="clinicEndWeekend" class="block text-sm font-medium mb-2 text-black">Horario Fin de
+                    Fin de Semana
+                  </label>
+                  <input type="time" id="clinicEndWeekend" class="w-full px-3 py-2 bg-gray-300 text- rounded-md"
+                    required />
+                </div>
+              </div>
+
+              <!-- Parte 2: Información Adicional -->
+              <div class="">
+                <div class="mb-4">
+                  <label for="clinicXCoord" class="block mb-2 text-sm font-medium text-black">Coordenada X</label>
+                  <input type="number" step="any" id="clinicXCoord"
+                    class="w-full px-3 py-2 bg-gray-300 text- rounded-md" required />
+                </div>
+                <div class="mb-4">
+                  <label for="clinicYCoord" class="block text-sm mb-2 font-medium text-black">Coordenada Y</label>
+                  <input type="number" step="any" id="clinicYCoord"
+                    class="w-full px-3 py-2 bg-gray-300 text- rounded-md" required />
+                </div>
+                <div class="mb-4">
+                  <label for="clinicZone" class="block text-sm font-medium mb-2 text-black">Zona</label>
+                  <input type="text" id="clinicZone" class="w-full px-3 py-2 bg-gray-300 text- rounded-md" required />
+                </div>
+                <div class="mb-4">
+                  <label for="clinicStartWeek" class="block text-sm font-medium mb-2 text-black">Horario Inicio de
+                    Semana</label>
+                  <input type="time" id="clinicStartWeek" class="w-full px-3 py-2 bg-gray-300 text- rounded-md"
+                    required />
+                </div>
+                <div class="mb-4">
+                  <label for="clinicEndWeek" class="block text-sm font-medium mb-2 text-black">Horario Fin de
+                    Semana</label>
+                  <input type="time" id="clinicEndWeek" class="w-full px-3 py-2 bg-gray-300 text- rounded-md"
+                    required />
+                </div>
+              </div>
+            </div>
+            <div class="text-center w-full mt-5 flex justify-center items-center">
+              <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                Agregar Clínica
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+
+  <script>
+    // Llama a la función cuando se cargue la página
+    document.addEventListener("DOMContentLoaded", loadTable);
+
+    // Función para inicializar la tabla
+    async function loadTable() {
+      document.getElementById("loadingMessage").classList.remove("hidden");
+      try {
+        const response = await fetch("/clinicaComunal/all"); // Obtén datos del backend
+        const clinic = await response.json(); // Convierte la respuesta a JSON
+
+        // Configuración de Tabulator
+        const table = new Tabulator("#clinicTable", {
+          data: clinic,
+          layout: "fitColumns",
+          scrollHorizontal: true,
+          initialSort: [ // Define el orden inicial de la columna ID en orden descendente
+            { column: "id", dir: "desc" }
+          ],
+          columns: [
+            { title: "ID", field: "id", sorter: "number", width: 70 },
+            { title: "Nombre", field: "nombre", sorter: "string" },
+            { title: "Dirección", field: "direccion" },
+            { title: "Coordenada X", field: "coorX" },
+            { title: "Coordenada Y", field: "coorY" },
+            { title: "Zona", field: "zona" },
+            { title: "Municipio", field: "municipio", width: 80 },
+            {
+              title: "Horario de Semana",
+              field: "horarioSemana",
+
+              headerSort: false,
+              formatter: function (cell) {
+                const data = cell.getData();
+                return `<div class="text-sm">
+                    <div>Inicio: ${data.horarioInicioSemana || "N/A"}</div>
+                    <div>Fin: ${data.horarioFinSemana || "N/A"}</div>
+                  </div>`;
+              },
+            },
+            {
+              title: "Horario Fin de Semana",
+              field: "horarioFinSemana",
+              headerSort: false,
+              formatter: function (cell) {
+                const data = cell.getData();
+                return `<div class="text-sm">
+                    <div>Inicio: ${data.horarioInicioFinde || "N/A"}</div>
+                    <div>Fin: ${data.horarioFinFinde || "N/A"}</div>
+                  </div>`;
+              },
+            },
+            {
+              title: "Acciones",
+              field: "acciones",
+              headerSort: false,
+              formatter: function (cell) {
+                const data = cell.getRow().getData();
+                return `
+                    <div class=" w-full">
+                      <button class="text-green-500 hover:text-green-700 mr-2" onclick="viewClinic(${JSON.stringify(data).replace(/"/g, '&quot;')})">
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                      <button  class="text-blue-500 hover:text-blue-700 mr-2" onclick="editClinic(
+                        '${data.id}',
+                        '${data.nombre}',
+                        '${data.direccion}',
+                        '${data.coorX}',
+                        '${data.coorY}',
+                        '${data.zona}',
+                        '${data.horarioInicioSemana}',
+                        '${data.horarioFinSemana}',
+                        '${data.horarioInicioFinde}',
+                        '${data.horarioFinFinde}',
+                        '${data.municipio}'
+                      )">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      <button class="text-red-500 hover:text-red-700" onclick="deleteClinic('${data.id}')">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                  `;
+              },
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Error al cargar los datos:", error);
+      } finally {
+        document.getElementById("loadingMessage").classList.add("hidden");
+      }
+    }
+
+    function toggleModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal.classList.contains("hidden")) {
+        clearInput();
+        // Restaurar el texto y el evento del botón de envío
+        const submitButton = document.querySelector(
+          "form button[type='submit']"
+        );
+
+
+        submitButton.innerText = "Agregar Clínica Médica";
+        submitButton.onclick = (event) => addClinic(event);
+        document.getElementById("title-modal").innerText =
+          "Agregar Nueva Clínica Médica";
+
+      }
+      modal.classList.toggle("hidden");
+
+    }
+
+    function clearInput() {
+      document.getElementById("clinicName").value = "";
+      document.getElementById("clinicAddress").value = "";
+      document.getElementById("clinicXCoord").value = "";
+      document.getElementById("clinicYCoord").value = "";
+      document.getElementById("clinicZone").value = "";
+      document.getElementById("clinicStartWeek").value = "";
+      document.getElementById("clinicEndWeek").value = "";
+      document.getElementById("clinicStartWeekend").value = "";
+      document.getElementById("clinicEndWeekend").value = "";
+      document.getElementById("municipality").value = "";
+    }
+
+    async function addClinic(event) {
+      event.preventDefault();
+
+      // Obtener valores del formulario
+      const name = document.getElementById("clinicName").value;
+      const address = document.getElementById("clinicAddress").value;
+      const xCoordinate = document.getElementById("clinicXCoord").value;
+      const yCoordinate = document.getElementById("clinicYCoord").value;
+      const zone = document.getElementById("clinicZone").value;
+      const weekStart = document.getElementById("clinicStartWeek").value;
+      const weekEnd = document.getElementById("clinicEndWeek").value;
+      const weekendStart = document.getElementById("clinicStartWeekend").value;
+      const weekendEnd = document.getElementById("clinicEndWeekend").value;
+      const municipality = document.getElementById("municipality").value;
+
+      // Validación
+      if (
+        !name || !address || !xCoordinate || !yCoordinate || !zone ||
+        !weekStart || !weekEnd || !weekendStart || !weekendEnd || !municipality
+      ) {
+        Toastify({
+          text: "Por favor, complete todos los campos.",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "#dece1d",
+        }).showToast();
+        return;
+      }
+
+      const button = document.querySelector('form button[type="submit"]');
+      button.disabled = true;
+      button.textContent = "Agregando...";
+
+      const data = {
+        nombre: name,
+        direccion: address,
+        coorX: xCoordinate,
+        coorY: yCoordinate,
+        zona: zone,
+        horarioInicioSemana: weekStart,
+        horarioFinSemana: weekEnd,
+        municipio: municipality,
+        horarioInicioFinde: weekendStart,
+        horarioFinFinde: weekendEnd,
+      };
+
+      try {
+        // Crear la tarjeta de la clínica
+        const response = await fetch("/clinicaComunal/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          throw new Error("Error al agregar la clínica");
+        }
+
+        // Recargar la tabla
+        loadTable();
+
+        // Limpiar formulario y cerrar modal
+        clearInput();
+
+        toggleModal("addClinicModal");
+
+        // Notificación de éxito
+        Toastify({
+          text: "Clínica agregada correctamente.",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "#1ebd31",
+        }).showToast();
+      } catch (error) {
+        console.error("Error al agregar la clínica:", error);
+
+        // Notificación de error
+        Toastify({
+          text: "Hubo un error al agregar la clínica.",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "FF5F6D",
+        }).showToast();
+      } finally {
+        button.disabled = false;
+        button.textContent = "Agregar Clínica";
+      }
+    }
+
+    function editClinic(
+      id,
+      name,
+      address,
+      xCoordinate,
+      yCoordinate,
+      zone,
+      weekStart,
+      weekEnd,
+      weekendStart,
+      weekendEnd,
+      municipality
+    ) {
+      document.getElementById("clinicName").value = name;
+      document.getElementById("clinicAddress").value = address;
+      document.getElementById("clinicXCoord").value = xCoordinate;
+      document.getElementById("clinicYCoord").value = yCoordinate;
+      document.getElementById("clinicZone").value = zone;
+      document.getElementById("clinicStartWeek").value = weekStart;
+      document.getElementById("clinicEndWeek").value = weekEnd;
+      document.getElementById("clinicStartWeekend").value = weekendStart;
+      document.getElementById("clinicEndWeekend").value = weekendEnd;
+      document.getElementById("municipality").value = municipality;
+
+      document.getElementById("title-modal").innerText =
+        "Editar Clínica Médica";
+
+      const submitButton = document.querySelector(
+        "form button[type='submit']"
+      );
+      submitButton.innerText = "Guardar Cambios";
+
+      submitButton.onclick = (event) => editModalClinic(event, id);
+
+      // Abrir el modal para editar
+      toggleModal("addClinicModal");
+    }
+
+    async function editModalClinic(event, clinicId) {
+      event.preventDefault();
+
+      const button = document.querySelector("form button[type='submit']");
+      button.disabled = true;
+      button.textContent = "Actualizando...";
+
+      // Obtener valores del formulario
+      const name = document.getElementById("clinicName").value;
+      const address = document.getElementById("clinicAddress").value;
+      const xCoordinate = document.getElementById("clinicXCoord").value;
+      const yCoordinate = document.getElementById("clinicYCoord").value;
+      const zone = document.getElementById("clinicZone").value;
+      const weekStart = document.getElementById("clinicStartWeek").value;
+      const weekEnd = document.getElementById("clinicEndWeek").value;
+      const weekendStart = document.getElementById("clinicStartWeekend").value;
+      const weekendEnd = document.getElementById("clinicEndWeekend").value;
+      const municipality = document.getElementById("municipality").value;
+
+      const data = {
+        nombre: name,
+        direccion: address,
+        coorX: xCoordinate,
+        coorY: yCoordinate,
+        zona: zone,
+        horarioInicioSemana: weekStart,
+        horarioFinSemana: weekEnd,
+        municipio: municipality,
+        horarioInicioFinde: weekendStart,
+        horarioFinFinde: weekendEnd,
+      };
+
+      try {
+        // Enviar solicitud PUT al endpoint correcto con el ID de la clínica
+        const response = await fetch(`/clinicaComunal/update/${clinicId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          throw new Error("Error al editar la clínica");
+        }
+
+        // Recargar la tabla
+        loadTable();
+
+        // Limpiar formulario y cerrar modal
+        clearInput();
+        toggleModal("addClinicModal");
+
+        // Notificación de éxito
+        Toastify({
+          text: "Clínica editada correctamente.",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "#1ebd31",
+        }).showToast();
+      } catch (error) {
+        console.error("Error al editar la clínica:", error);
+
+        // Notificación de error
+        Toastify({
+          text: "Hubo un error al editar la clínica.",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "FF5F6D",
+        }).showToast();
+      } finally {
+        button.disabled = false;
+        button.textContent = "Guardar Cambios";
+      }
+    }
+
+    async function deleteClinic(id) {
+      // Obtener el elemento del mensaje de carga
+      const loadingMessage = document.getElementById("loadingMessage");
+
+      // Mostrar SweetAlert2 para confirmar la eliminación
+      const { isConfirmed } = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Una vez eliminada, no se podrá recuperar la clínica.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!isConfirmed) {
+        return;
+      }
+
+      try {
+        // Mostrar el mensaje de carga
+        loadingMessage.classList.remove("hidden");
+
+        // Hacer la solicitud de eliminación
+        const response = await fetch(`/clinicaComunal/delete/${id}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          console.error("Error al eliminar la clínica");
+          // Notificación de error
+          Toastify({
+            text: "Hubo un error al eliminar la clínica.",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "FF5F6D",
+          }).showToast();
+          return;
+        }
+
+        // Recargar la tabla después de eliminar
+        loadTable();
+
+        // Notificación de éxito
+        Toastify({
+          text: "Clínica eliminada correctamente.",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "#1ebd31",
+        }).showToast();
+      } catch (error) {
+        console.error("Error al eliminar la clínica:", error);
+        // Notificación de error inesperado
+        Toastify({
+          text: "Hubo un error inesperado al eliminar la clínica.",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "FF5F6D",
+        }).showToast();
+      } finally {
+        // Ocultar el mensaje de carga
+        loadingMessage.classList.add("hidden");
+      }
+    }
+
+    function viewClinic(data) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center';
+      modal.innerHTML = `
+          <div class="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-4">${data.nombre}</h2>
+            <p><strong>Dirección:</strong> ${data.direccion}</p>
+            <p><strong>Municipio:</strong> ${data.municipio}</p>
+            <p><strong>Coordenadas:</strong> X: ${data.coorX}, Y: ${data.coorY}</p>
+            <p><strong>Zona:</strong> ${data.zona}</p>
+            <p><strong>Horario de Semana:</strong> ${data.horarioInicioSemana} - ${data.horarioFinSemana}</p>
+            <p><strong>Horario de Fin de Semana:</strong> ${data.horarioInicioFinde} - ${data.horarioFinFinde}</p>
+            <button class="mt-4 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="this.closest('.fixed').remove()">
+              Cerrar
+            </button>
+          </div>
+        `;
+      document.body.appendChild(modal);
+    }
+  </script>
+</body>
+
+</html>

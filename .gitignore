@@ -1,0 +1,11 @@
+
+.classpath
+.project
+target/
+bin/
+.settings/
+.idea/
+*.iml
+node_modules
+src/main/resources/static/css/credenciales.json
+"src/main/resources/credenciales.json" 

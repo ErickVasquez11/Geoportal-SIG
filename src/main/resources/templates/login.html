@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Geoportal Centros de Asistencia Médica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-cyan-700 p-4">
+    
+    <div class="absolute top-4 left-4">
+        <a href="/map/index" class="flex items-center text-white bg-blue-500 hover:bg-blue-600 p-2 rounded-full shadow-lg">
+            <i data-lucide="arrow-left" class="w-6 h-6"></i>
+        </a>
+    </div>
+    <div class="max-w-md w-full space-y-8 bg-white bg-opacity-90 backdrop-filter backdrop-blur-lg p-10 rounded-2xl shadow-2xl animate-fadeIn">
+        <div class="text-center">
+            <div class="relative w-24 h-24 mx-auto mb-4">
+                <img src="/images/alfiler.png" alt="Logo" class="w-full h-full object-contain animate-pulse">
+            </div>
+            <h2 class="mt-6 text-3xl font-bold text-gray-900">
+                Geoportal
+            </h2>
+            <p class="mt-2 text-sm text-blue-600">
+                Centros de Asistencia Médica
+            </p>
+        </div>
+        <form class="mt-8 space-y-6" action="/login" method="POST">
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div class="relative">
+                    <label for="username" class="sr-only">Nombre de usuario</label>
+                    <i data-lucide="user" class="absolute top-3 left-3 text-gray-400 w-5 h-5"></i>
+                    <input id="username" name="username" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition duration-300 ease-in-out" placeholder="Nombre de usuario">
+                </div>
+                <div class="relative">
+                    <label for="password" class="sr-only">Contraseña</label>
+                    <i data-lucide="lock" class="absolute top-3 left-3 text-gray-400 w-5 h-5"></i>
+                    <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition duration-300 ease-in-out" placeholder="Contraseña">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i data-lucide="map-pin" class="h-5 w-5 text-blue-500 group-hover:text-blue-400" aria-hidden="true"></i>
+                    </span>
+                    Ingresar al Geoportal
+                </button>
+            </div>
+        </form>
+      
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+   
+    <script>
+        lucide.createIcons();
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,129 @@
+/* Importaciones de Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos personalizados */
+:root {
+    --tw-backdrop-sepia: 0.5; /* Ajusta este valor según necesites */
+    --tw-contain-size: contain; /* 'contain' o 'cover' según lo que necesites */
+    --tw-contain-layout: layout; /* Este debe ser definido según tu necesidad */
+    --tw-contain-paint: paint; /* Este debe ser definido según tu necesidad */
+    --tw-contain-style: style; /* Este debe ser definido según tu necesidad */
+}
+
+#mapid {
+    height: 60%; /* Altura fija o responsive según necesites */
+    width: 100%; /* Ajuste para ocupar todo el ancho del contenedor */
+       z-index:1;
+}
+
+.map-container {
+    margin-top: 20px; /* Espacio después de la navbar */
+    margin-bottom: 20px; /* Espacio antes de la tabla */
+    z-index:1;
+}
+
+.table-container {
+    margin-top: 10px; /* Espacio después del mapa */
+    z-index:1;
+    width: 100%; 
+}
+.table-container table tbody tr:hover {
+    background-color: #f0f0f0; 
+    cursor: pointer; 
+}
+.custom-sepia-effect {
+    backdrop-filter: sepia(var(--tw-backdrop-sepia));
+}
+.chat-content {
+    display: none;
+    width: 384px; /* Mismo ancho que w-96 */
+}
+.chatbot-container {
+    position: fixed;
+    bottom: 0px;
+    right: 85px;
+    width: 300px;  /* Puedes ajustar el ancho como prefieras */
+    z-index: 100000; /* Asegura que el chatbot esté sobre otros componentes */
+}
+@media (max-width: 768px) {
+    .website-name {
+        display: none;  /* Oculta el texto en dispositivos móviles */
+    }
+
+    .logo-image {
+        display:block;  /* Muestra la imagen en dispositivos móviles */
+    }
+}
+
+/* Asegúrate de que la imagen está oculta por defecto en pantallas más grandes */
+.logo-image {
+    width: fit-content;
+    height: fit-content;
+
+}
+/* Asegura que el menú esté oculto inicialmente */
+.mobile-menu {
+    display: none;
+}
+
+/* CSS para animar la entrada del menú */
+.mobile-menu.active {
+    display: block;
+}
+.container-full {
+    position: absolute;
+    bottom: 0px;
+    top: 50px;
+    width: 100%;
+    z-index: 10;
+    overflow: auto;
+}
+
+
+
+.navbar {
+    z-index: 10000;
+}
+.pagination-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pagination-menu {
+    display: inline-flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pagination-menu li {
+    margin: 0 5px;
+}
+
+.pagination-link {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #007bff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.pagination-link:hover {
+    background-color: #f0f0f0;
+    border-color: #ccc;
+}
+
+.pagination-link:active,
+.pagination-link:focus {
+    outline: none;
+    background-color: #e9ecef;
+    border-color: #ddd;
+}
+.custom-dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+}

@@ -1,0 +1,22 @@
+{
+  "name": "geoportal-vacunacion",
+  "version": "1.0.0",
+  "description": "Aplicación web que muestra mapas donde se localizacon los centros de vacunación y nivel de avance de la vacuna, en el departamento de San Salvador, tomando en cuenta el municipio de residencia de la persona.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-css": "tailwindcss -i ./src/main/resources/static/css/style.css -o ./src/main/resources/static/css/styles.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.4.3"
+  },
+  "dependencies": {
+    "actions-on-google": "^2.14.0",
+    "body-parser": "^1.20.2",
+    "dialogflow-fulfillment": "^0.6.1",
+    "express": "^4.19.2"
+  }
+}

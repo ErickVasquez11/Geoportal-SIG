@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}" />
+
+    <style>
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 1.5rem;
+            color: gray;
+            cursor: pointer;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover~label,
+        .star-rating input:checked~label {
+            color: gold;
+        }
+
+        .star-rating input:checked~label:hover,
+        .star-rating input:checked~label:hover~label {
+            color: gold;
+        }
+
+        .back {
+            background-color: #479b3d;
+        }
+
+        .back:hover {
+            background-color: #3a8230;
+            border-color: #3a8230;
+        }
+
+        details summary {
+            cursor: pointer;
+            list-style: none;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        #map {
+            height: 400px;
+        }
+    </style>
+    <link rel="icon" href="/images/alfiler.png" type="image/png" />
+</head>
+
+<body class="bg-gray-100">
+    <div class="bg-transparent w-full absolute">
+        <button type="button" id="backButton" class="mt-3 ml-20 px-6 py-2 border back text-white rounded-lg">
+            Regresar
+        </button>
+    </div>
+    <div class="max-w-lg mx-auto mt-8 bg-white border border-gray-200 rounded-lg shadow-md">
+        <div id="map" class="w-full"></div>
+        <div class="p-4">
+            <h1 class="text-2xl font-semibold mb-2" th:text="${clinica.nombre}">
+                Nombre de la Clínica
+            </h1>
+
+            <div class="flex justify-between items-center">
+                <div class="star-rating flex justify-center mb-2">
+                    <input type="radio" id="star5" name="rating" value="5" />
+                    <label for="star5" title="5 estrellas">★</label>
+                    <input type="radio" id="star4" name="rating" value="4" />
+                    <label for="star4" title="4 estrellas">★</label>
+                    <input type="radio" id="star3" name="rating" value="3" />
+                    <label for="star3" title="3 estrellas">★</label>
+                    <input type="radio" id="star2" name="rating" value="2" />
+                    <label for="star2" title="2 estrellas">★</label>
+                    <input type="radio" id="star1" name="rating" value="1" />
+                    <label for="star1" title="1 estrella">★</label>
+                </div>
+            </div>
+            <p class="text-gray-700 mb-4">
+                Geoportal Centros de Asistencia Médica.
+            </p>
+            <div class="text-gray-700 mb-4">
+                <p>
+                    <strong>Dirección:</strong>
+                    <span th:text="${clinica.direccion}">Dirección de la Clínica</span>
+                </p>
+                <p>
+                    <strong>Municipio:</strong>
+                    <span th:text="${clinica.municipio}">Municipio de la Clínica</span>
+                </p>
+                <p>
+                    <strong>Zona:</strong>
+                    <span th:text="${clinica.zona}">Zona de la Clínica</span>
+                </p>
+                <p>
+                    <strong>Horario: </strong><span th:text="${clinica.horarioInicioSemana}">Horario Inicio
+                        Semana</span>
+                    -
+                    <span th:text="${clinica.horarioFinSemana}">Horario Fin Semana</span>
+                </p>
+                <p>
+                    <strong>Horario fines de semana:</strong>
+                    <span th:text="${clinica.horarioInicioFinde}">Horario Inicio Fines de Semana</span>
+                    -
+                    <span th:text="${clinica.horarioFinFinde}">Horario Fin Fines de Semana</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script th:inline="javascript">
+        // Inicializar Leaflet map
+        var coorX = /*[[${clinica.coorX}]]*/ 0;
+        var coorY = /*[[${clinica.coorY}]]*/ 0;
+        var map = L.map("map").setView([coorY, coorX], 13);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+        }).addTo(map);
+
+        var customIcon = L.icon({
+            iconUrl: "/images/alfiler.png",
+            iconSize: [42, 42],
+            iconAnchor: [21, 42],
+            popupAnchor: [0, -42],
+        });
+
+        L.marker([coorY, coorX], { icon: customIcon })
+            .addTo(map)
+            .bindPopup(
+                "<b>" + /*[[${clinica.nombre}]]*/ "Nombre de la Clínica" + "</b>"
+            )
+            .openPopup();
+        /*]]>*/
+
+        document.getElementById("backButton").onclick = function () {
+            window.location.href = "/map/index";
+        };
+    </script>
+</body>
+
+</html>

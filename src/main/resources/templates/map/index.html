@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Geoportal Centros de Asistencia Médica</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Incluyendo hojas de estilo locales y externas -->
+    <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}" />
+    <link rel="stylesheet" href="/css/main.css" th:href="@{/webjars/leaflet/1.0.3/leaflet.css}" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="webjars/jquery/3.2.0/jquery.min.js"
+        th:src="@{/webjars/jquery/3.2.0/jquery.min.js}"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+ 
+    <script type="text/javascript" src="/webjars/leaflet/1.0.3/leaflet.js"
+        th:src="@{/webjars/leaflet/1.0.3/leaflet.js}"></script>
+    <link rel="stylesheet" type="text/css" href="webjars/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+        th:href="@{/webjars/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css}" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <style>
+        df-messenger {
+            --df-messenger-bot-message: #374151;
+            --df-messenger-button-titlebar-color: #374151;
+            --df-messenger-chat-background-color: #fafafa;
+            --df-messenger-font-color: white;
+            --df-messenger-send-icon: #374151;
+            --df-messenger-user-message: #479b3d;
+            --df-messenger-chat-bubble-background: #479b3d;
+            --df-messenger-chat-bubble-icon-color: #479b3d;
+        }
+
+        .custom-dropdown-menu {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .back {
+            background-color: #2b6cb0;
+        }
+
+        .back:hover {
+            background-color: #3182ce;
+            border-color: #3a8230;
+        }
+    </style>
+    <link rel="icon" href="/images/alfiler.png" type="image/png" />
+</head>
+
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg w-full">
+        <div class="mx-auto">
+            <div class="flex justify-between items-center px-4 h-12 w-full">
+                <!-- Añadido items-center -->
+                <!-- Logo y nombre del sitio -->
+                <div class="flex items-center">
+                    <span class="font-bold website-name cursor-default">Geoportal Centros de Asistencia Médica</span>
+                    </a>
+                    <!-- Menú de enlaces -->
+                    <div class="flex items-center justify-center ml-6 gap-5">
+                        <a th:href="@{/map/index}" class="text-gray-700 hover:text-gray-900">Clínicas Comunales</a>
+                        <a th:href="@{/map/unidades}" class="text-gray-700 hover:text-gray-900">Unidades Médicas</a>
+                    </div>
+                </div>
+
+                <!-- Enlace de Iniciar sesión -->
+                <div class="hidden md:flex items-center space-x-1 ml-auto">
+                    <a th:href="@{/login}" class="px-4 py-1.5 border back text-white rounded-lg no-underline">Iniciar
+                        Sesión</a>
+                </div>
+
+                <!-- Menú móvil -->
+                <div class="md:hidden flex items-center" style="width: 40px; height: 40px; margin-top: 8px">
+                    <button class="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mobile-menu hidden">
+                    <a th:href="@{/map/index}" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">Clínicas
+                        Comunales</a>
+                    <a th:href="@{/map/unidades}"
+                        class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">Unidades
+                        Médicas</a>
+                    <a th:href="@{/login}"
+                        class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 font-bold">Iniciar
+                        Sesión</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-full text-xs sm:text-xs md:text-xs lg:text-base">
+        <div id="mapid"></div>
+        <div class="mt-2 bg-white px-6 py-2 rounded-lg shadow-md">
+            <div class="flex flex-col items-center md:flex-row md:justify-center md:items-center">
+                <h1 class="font-bold text-center text-xl mx-auto md:ml-4">
+                    Clínicas Comunales
+                </h1>
+                <div class="flex-end">
+                    <label for="municipioFilter" class="block text-sm font-medium text-gray-700">Filtrar por
+                        Municipio:</label>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            style="background-color: white; color: black">
+                            Seleccionar Municipios
+                        </button>
+                        <div class="dropdown-menu custom-dropdown-menu" aria-labelledby="dropdownMenuButton"
+                            style="background-color: white; color: black">
+                            <th:block th:each="municipio, index : ${municipios}">
+                                <a class="dropdown-item">
+                                    <input type="checkbox" id="municipio_${index}" th:value="${municipio}"
+                                        th:data-value="${municipio}" />
+                                    <label th:for="'municipio' + ${index}" th:text="${municipio}">Municipio</label>
+                                </a>
+                            </th:block>
+                            <div class="text-center">
+                                <button id="updateDataButton" class="btn btn-primary mt-2">
+                                    Actualizar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-container" style="overflow-x: auto">
+                <table class="min-w-full overflow-x-auto divide-y divide-gray-200">
+                    <thead class="bg-gray-700 text-white">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left font-medium uppercase tracking-wider">
+                                Nombre
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left font-medium uppercase tracking-wider">
+                                Dirección
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left font-medium uppercase tracking-wider">
+                                Municipio
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <th:block th:each="centro : ${centros}">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <a th:href="@{/map/informacion(id=${centro.id})}"
+                                        class="text-blue-500 hover:text-blue-700" th:text="${centro.nombre}"></a>
+                                </td>
+                                <td th:text="${centro.direccion}" class="px-6 py-4 whitespace-nowrap"></td>
+                                <td th:text="${centro.municipio}" class="px-6 py-4 whitespace-nowrap"></td>
+                            </tr>
+                        </th:block>
+                    </tbody>
+                </table>
+                <div class="pagination-container">
+                    <ul class="pagination-menu">
+                        <li th:if="${currentPage > 0}">
+                            <a th:href="@{/map/index(page=${currentPage - 1}, size=${size})}"
+                                class="pagination-link">Anterior</a>
+                        </li>
+                        <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                            <a th:href="@{/map/index(page=${i}, size=${size})}" th:text="${i + 1}"
+                                class="pagination-link"></a>
+                        </li>
+                        <li th:if="${currentPage < totalPages - 1}">
+                            <a th:href="@{/map/index(page=${currentPage + 1}, size=${size})}"
+                                class="pagination-link">Siguiente</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+
+    <df-messenger intent="WELCOME" chat-title="GeoAgente" chat-icon="https://i.ibb.co/fvbZ8ZP/logo2.png"
+        agent-id="918c7b00-fc13-47e3-84c6-41fd9dff493e" language-code="es">
+    </df-messenger>
+
+    <!--  Este script agrega los pins de las clinicas y un pin con la ubicacion del usuario asimismo busca una clinica que posiblemente sea la mas cercana del usuario -->
+    <script th:inline="javascript">
+
+        // Mapa con icono personalizado
+        var customIcon = L.icon({
+            iconUrl: '/images/alfiler2.png',
+            iconSize: [42, 42],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32]
+        });
+
+        var serverContext = [[@{/}]];
+        var model_map = [[${ model.map }]];
+        var clinicasComunales = [[${ centrosMapa }]];
+        var mymap = L.map('mapid').setView([13.693399179677684, -89.21802884256014], 13);
+        new L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(mymap);
+        mymap.on('zoomend', updateLeafletMap, mymap);
+        mymap.on('moveend', updateLeafletMap, mymap);
+
+        clinicasComunales.forEach(element => L.marker([element.coorY, element.coorX], { icon: customIcon }).addTo(mymap).bindPopup(`<h5>${element.nombre}</h5>`));
+
+
+
+        function updateLeafletMap(ev) {
+            var map = this;
+            var form_data = new FormData();
+            form_data.append('zoom', map.getZoom());
+            form_data.append('baseLayer', model_map.baseLayer);
+            form_data.append('centerX', map.getCenter().lng);
+            form_data.append('centerY', map.getCenter().lat);
+            form_data.append('id', model_map.id);
+
+            $.ajax({
+                url: serverContext + 'map/update',
+                data: form_data,
+                processData: false,
+                contentType: false,
+                type: 'POST',
+                success: function (data) {
+                    console.log(data);
+                }
+            });
+        }
+
+        var userMarker;
+        var userCircle;
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            var R = 6371e3; // Radio de la Tierra en metros
+            var φ1 = lat1 * Math.PI / 180; // φ, λ en radianes
+            var φ2 = lat2 * Math.PI / 180;
+            var Δφ = (lat2 - lat1) * Math.PI / 180;
+            var Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            var a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            var d = R * c; // en metros
+            return d;
+        }
+
+        function findNearestClinic(userLat, userLon, clinics) {
+            if (clinics.length === 0) {
+                return null;
+            }
+
+            let nearestClinic = clinics[0];
+            let minDistance = calculateDistance(userLat, userLon, clinics[0].coorY, clinics[0].coorX);
+
+            clinics.forEach(clinic => {
+                let distance = calculateDistance(userLat, userLon, clinic.coorY, clinic.coorX);
+                if (distance < minDistance) {
+                    nearestClinic = clinic;
+                    minDistance = distance;
+                }
+            });
+
+            return nearestClinic;
+        }
+
+        function onLocationFound(e) {
+            var radius = e.accuracy / 2;
+
+            if (userMarker) {
+                mymap.removeLayer(userMarker);
+                mymap.removeLayer(userCircle);
+            }
+
+            userMarker = L.marker(e.latlng).addTo(mymap)
+                .bindPopup("Usted se encuentra dentro de  " + radius + " metros de este punto").openPopup();
+
+
+            var nearestClinic = findNearestClinic(e.latlng.lat, e.latlng.lng, clinicasComunales);
+
+            if (nearestClinic) {
+                L.marker([nearestClinic.coorY, nearestClinic.coorX], { icon: customIcon }).addTo(mymap)
+                    .bindPopup(`<h5>${nearestClinic.nombre}</h5><p>Dirección: ${nearestClinic.direccion}</p><p>Distancia: ${(Math.round(calculateDistance(e.latlng.lat, e.latlng.lng, nearestClinic.coorY, nearestClinic.coorX))) / 1000} kilometros</p>`)
+                    .openPopup();
+            }
+        }
+
+        function onLocationError(e) {
+            alert(e.message);
+        }
+
+        mymap.on('locationfound', onLocationFound);
+        mymap.on('locationerror', onLocationError);
+        mymap.locate({ setView: true, maxZoom: 16 });
+
+        mymap.on('click', function () {
+            mymap.eachLayer(function (layer) {
+                if (layer instanceof L.Marker && layer !== userMarker) {
+                    mymap.removeLayer(layer);
+                }
+                if (layer instanceof L.Circle && layer !== userCircle) {
+                    mymap.removeLayer(layer);
+                }
+            });
+
+            clinicasComunales.forEach(clinica => {
+                L.marker([clinica.coorY, clinica.coorX], { icon: customIcon }).addTo(mymap).bindPopup(`<h5>${clinica.nombre}</h5>`);
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuButton = document.querySelector(".mobile-menu-button");
+            const mobileMenu = document.querySelector(".mobile-menu");
+            menuButton.addEventListener("click", function () {
+                mobileMenu.classList.toggle("hidden");
+            });
+        });
+    </script>
+    <!--  Este script agrega funcionalidad para interactuar con las filas de la tabla y el mapa -->
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            const tableRows = document.querySelectorAll("tbody tr");
+
+            tableRows.forEach((row) => {
+                row.addEventListener("click", function () {
+                    const clinicaId = row.querySelector("td:first-child").innerText;
+
+                    mymap.eachLayer(function (layer) {
+                        if (layer instanceof L.Marker && layer !== userMarker) {
+                            mymap.removeLayer(layer);
+                        }
+                        if (layer instanceof L.Circle && layer !== userCircle) {
+                            mymap.removeLayer(layer);
+                        }
+                    });
+
+                    const clinica = clinicasComunales.find(
+                        (clinica) => clinica.id === parseInt(clinicaId)
+                    );
+                    if (clinica) {
+                        L.marker([clinica.coorY, clinica.coorX], { icon: customIcon })
+                            .addTo(mymap)
+                            .bindPopup(`<h5>${clinica.nombre}</h5>`)
+                            .openPopup();
+                    }
+                });
+            });
+
+            mymap.on("click", function () {
+                mymap.eachLayer(function (layer) {
+                    if (layer instanceof L.Marker && layer !== userMarker) {
+                        mymap.removeLayer(layer);
+                    }
+                    if (layer instanceof L.Circle && layer !== userCircle) {
+                        mymap.removeLayer(layer);
+                    }
+                });
+
+                clinicasComunales.forEach((clinica) => {
+                    L.marker([clinica.coorY, clinica.coorX], { icon: customIcon })
+                        .addTo(mymap)
+                        .bindPopup(`<h5>${clinica.nombre}</h5>`);
+                });
+            });
+        });
+    </script>
+    <!-- Comentario: Este script maneja el filtrado de las clínicas según los municipios seleccionados. -->
+    <script>
+        $(document).ready(function () {
+            $(".dropdown-menu label").click(function () {
+                var $checkbox = $(this).find(":checkbox");
+                $checkbox.prop("checked", !$checkbox.prop("checked"));
+
+                var selectedItems = $(".dropdown-menu input:checked")
+                    .map(function () {
+                        return $(this).attr("data-value");
+                    })
+                    .get();
+
+                var buttonText = "Seleccionar municipios";
+                if (selectedItems.length > 0) {
+                    buttonText = selectedItems.join(", ");
+                }
+
+                $(this).closest(".dropdown").find(".btn").html(buttonText);
+
+                return false;
+            });
+        });
+
+        function asignarEventosDeClicAFilas() {
+            const tableRows = document.querySelectorAll("tbody tr");
+            tableRows.forEach((row) => {
+                row.addEventListener("click", function () {
+                    const clinicaId = row.querySelector("td:first-child").innerText;
+
+                    mymap.eachLayer(function (layer) {
+                        if (layer instanceof L.Marker && layer !== userMarker) {
+                            mymap.removeLayer(layer);
+                        }
+                        if (layer instanceof L.Circle && layer !== userCircle) {
+                            mymap.removeLayer(layer);
+                        }
+                    });
+
+                    const clinica = clinicasComunales.find(
+                        (clinica) => clinica.id === parseInt(clinicaId)
+                    );
+                    if (clinica) {
+                        L.marker([clinica.coorY, clinica.coorX], { icon: customIcon })
+                            .addTo(mymap)
+                            .bindPopup(`<h5>${clinica.nombre}</h5>`)
+                            .openPopup();
+                    }
+                });
+            });
+        }
+
+        $("#updateDataButton").click(function () {
+            var selectedMunicipios = [];
+            $('input[type="checkbox"]:checked').each(function () {
+                var municipio = $(this).val();
+                selectedMunicipios.push(municipio);
+            });
+            console.log("Municipios seleccionados:", selectedMunicipios);
+            var filteredClinicas;
+            if (selectedMunicipios.length === 0) {
+                filteredClinicas = clinicasComunales;
+            } else {
+                filteredClinicas = clinicasComunales.filter(function (clinica) {
+                    return selectedMunicipios.includes(clinica.municipio);
+                });
+            }
+            console.log("Clínicas filtradas:", filteredClinicas);
+            $("tbody").empty();
+            filteredClinicas.forEach(function (clinica) {
+                $("tbody").append(`
+                <tr id="clinica-${clinica.id}">
+                    <td  class="px-6 py-4 whitespace-nowrap">${clinica.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${clinica.nombre}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${clinica.direccion}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${clinica.municipio}</td>
+                </tr>
+            `);
+            });
+
+            $(".list-container").empty();
+            filteredClinicas.forEach(function (clinica) {
+                $(".list-container").append(
+                    `<li>${clinica.nombre}, ${clinica.direccion}, ${clinica.municipio}</li>`
+                );
+            });
+
+            mymap.eachLayer(function (layer) {
+                if (layer instanceof L.Marker && layer !== userMarker) {
+                    mymap.removeLayer(layer);
+                }
+                if (layer instanceof L.Circle && layer !== userCircle) {
+                    mymap.removeLayer(layer);
+                }
+            });
+
+            filteredClinicas.forEach(function (clinica) {
+                L.marker([clinica.coorY, clinica.coorX], { icon: customIcon })
+                    .addTo(mymap)
+                    .bindPopup(`<h5>${clinica.nombre}</h5>`);
+            });
+            asignarEventosDeClicAFilas();
+        });
+    </script>
+</body>
+
+</html>
