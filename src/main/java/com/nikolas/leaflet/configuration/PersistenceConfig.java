@@ -70,9 +70,9 @@ public class PersistenceConfig {
 		final DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("org.postgresql.Driver");
 		// Actualiza URL, nombre de usuario y contraseña según los valores de Railway
-		dataSource.setUrl("jdbc:postgresql://monorail.proxy.rlwy.net:42136/railway");
-		dataSource.setUsername("postgres");
-		dataSource.setPassword("nFjxYMQxTGsRXFdoqfZfawCHTHmMkQpg");
+		dataSource.setUrl("jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres");
+		dataSource.setUsername("postgres.ijppxtiavgsbijwpfrqi");
+		dataSource.setPassword("1234");
 		return dataSource;
 	}
 	
